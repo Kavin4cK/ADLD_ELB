@@ -228,31 +228,29 @@ class RailwayAxleCounter:
         self.status_label.pack(fill=tk.X, side=tk.BOTTOM)
         
     def connect_arduinos(self):
-        try:
-            # Try to connect to UNO (usually /dev/ttyUSB0 or /dev/ttyACM0)
-            self.uno_serial = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
-            time.sleep(2)  # Wait for Arduino to reset
-            self.update_status("UNO connected on /dev/ttyUSB0")
-        except:
-            try:
-                self.uno_serial = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
-                time.sleep(2)
-                self.update_status("UNO connected on /dev/ttyACM0")
-            except Exception as e:
-                self.update_status(f"UNO connection failed: {e}")
+        # CORRECT PORTS (from your test results)
+        UNO_PORT = '/dev/ttyACM0'
+        NANO_PORT = '/dev/ttyUSB0'
         
+        # Connect to UNO
         try:
-            # Try to connect to Nano
-            self.nano_serial = serial.Serial('/dev/ttyUSB1', 115200, timeout=1)
+            self.uno_serial = serial.Serial(UNO_PORT, 115200, timeout=1)
+            time.sleep(2)  # Wait for Arduino to reset
+            self.update_status(f"✓ UNO connected on {UNO_PORT}")
+            print(f"UNO connected: {UNO_PORT}")
+        except Exception as e:
+            self.update_status(f"✗ UNO connection failed: {e}")
+            print(f"UNO error: {e}")
+        
+        # Connect to Nano
+        try:
+            self.nano_serial = serial.Serial(NANO_PORT, 115200, timeout=1)
             time.sleep(2)
-            self.update_status("Nano connected on /dev/ttyUSB1")
-        except:
-            try:
-                self.nano_serial = serial.Serial('/dev/ttyACM1', 115200, timeout=1)
-                time.sleep(2)
-                self.update_status("Nano connected on /dev/ttyACM1")
-            except Exception as e:
-                self.update_status(f"Nano connection failed: {e}")
+            self.update_status(f"✓ Nano connected on {NANO_PORT}")
+            print(f"Nano connected: {NANO_PORT}")
+        except Exception as e:
+            self.update_status(f"✗ Nano connection failed: {e}")
+            print(f"Nano error: {e}")
     
     def start_serial_threads(self):
         if self.uno_serial:
@@ -267,8 +265,10 @@ class RailwayAxleCounter:
         while self.running:
             try:
                 if self.uno_serial and self.uno_serial.in_waiting:
-                    line = self.uno_serial.readline().decode('utf-8').strip()
-                    self.process_uno_message(line)
+                    line = self.uno_serial.readline().decode('utf-8', errors='ignore').strip()
+                    if line:  # Only process non-empty lines
+                        print(f"UNO → {line}")
+                        self.process_uno_message(line)
             except Exception as e:
                 print(f"UNO read error: {e}")
             time.sleep(0.01)
@@ -277,8 +277,10 @@ class RailwayAxleCounter:
         while self.running:
             try:
                 if self.nano_serial and self.nano_serial.in_waiting:
-                    line = self.nano_serial.readline().decode('utf-8').strip()
-                    self.process_nano_message(line)
+                    line = self.nano_serial.readline().decode('utf-8', errors='ignore').strip()
+                    if line:  # Only process non-empty lines
+                        print(f"NANO → {line}")
+                        self.process_nano_message(line)
             except Exception as e:
                 print(f"Nano read error: {e}")
             time.sleep(0.01)
@@ -292,16 +294,25 @@ class RailwayAxleCounter:
             self.update_match_display()
         elif msg == "UNO_READY":
             self.update_status("UNO Ready")
+        elif msg.startswith("DEBUG:"):
+            # Optional: handle debug messages
+            pass
     
     def process_nano_message(self, msg):
         if msg.startswith("TEMP:"):
-            self.temperature = float(msg.split(":")[1])
-            self.update_temp_display()
+            try:
+                self.temperature = float(msg.split(":")[1])
+                self.update_temp_display()
+            except:
+                pass
         elif msg == "HOT_AXLE_ALERT":
             self.hot_axle = True
             self.update_temp_display()
         elif msg == "NANO_READY":
             self.update_status("Nano Ready")
+        elif msg.startswith("DEBUG:"):
+            # Optional: handle debug messages
+            pass
     
     def update_count_display(self):
         self.count_label.config(text=f"{self.axle_count:02d}")
@@ -378,6 +389,7 @@ class RailwayAxleCounter:
             if self.uno_serial:
                 with self.serial_lock:
                     self.uno_serial.write(message.encode())
+                    print(f"SENT TO UNO: {message.strip()}")
         except Exception as e:
             self.update_status(f"UNO send error: {e}")
     
