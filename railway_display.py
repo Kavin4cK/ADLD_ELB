@@ -427,10 +427,10 @@ if __name__ == "__main__":
     app = RailwayAxleCounter(root)
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
-```
 
----
 
+
+'''
 ## ✨ KEY IMPROVEMENTS
 
 ### 1. **Target Entry is Always Visible**
@@ -499,4 +499,4 @@ if __name__ == "__main__":
 │                      │  └────────────────┘  │
 └──────────────────────┴──────────────────────┘
 │ [10:45:23] Target set to 5                  │
-└─────────────────────────────────────────────┘
+└─────────────────────────────────────────────┘'''
