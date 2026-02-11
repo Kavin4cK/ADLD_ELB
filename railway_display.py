@@ -46,7 +46,7 @@ class RailwayAxleCounter:
         title_label = tk.Label(
             title_frame,
             text="🚂 RAILWAY AXLE COUNTER",
-            font=('Arial', 16, 'bold'),
+            font=('Arial', 14, 'bold'),
             bg='#0f3460',
             fg='#ffffff'
         )
@@ -62,12 +62,12 @@ class RailwayAxleCounter:
         
         # Axle Count Display
         count_frame = tk.Frame(left_frame, bg='#16213e', relief=tk.RAISED, bd=2)
-        count_frame.pack(fill=tk.X, pady=5)
+        count_frame.pack(fill=tk.X, pady=3)
         
         tk.Label(
             count_frame,
             text="AXLE COUNT",
-            font=('Arial', 12, 'bold'),
+            font=('Arial', 11, 'bold'),
             bg='#16213e',
             fg='#e94560'
         ).pack()
@@ -75,20 +75,20 @@ class RailwayAxleCounter:
         self.count_label = tk.Label(
             count_frame,
             text="00",
-            font=('Arial', 48, 'bold'),
+            font=('Arial', 42, 'bold'),
             bg='#16213e',
             fg='#00ff00'
         )
-        self.count_label.pack(pady=10)
+        self.count_label.pack(pady=5)
         
-        # Target Display
+        # Target Display with Entry
         target_frame = tk.Frame(left_frame, bg='#16213e', relief=tk.RAISED, bd=2)
-        target_frame.pack(fill=tk.X, pady=5)
+        target_frame.pack(fill=tk.X, pady=3)
         
         tk.Label(
             target_frame,
-            text="TARGET",
-            font=('Arial', 12, 'bold'),
+            text="TARGET AXLES",
+            font=('Arial', 11, 'bold'),
             bg='#16213e',
             fg='#e94560'
         ).pack()
@@ -96,11 +96,42 @@ class RailwayAxleCounter:
         self.target_label = tk.Label(
             target_frame,
             text="00",
-            font=('Arial', 36, 'bold'),
+            font=('Arial', 32, 'bold'),
             bg='#16213e',
             fg='#ffaa00'
         )
-        self.target_label.pack(pady=5)
+        self.target_label.pack(pady=3)
+        
+        # Target Entry Section (always visible)
+        target_entry_container = tk.Frame(target_frame, bg='#16213e')
+        target_entry_container.pack(pady=5)
+        
+        self.target_entry = tk.Entry(
+            target_entry_container,
+            font=('Arial', 16, 'bold'),
+            width=4,
+            bg='#ffffff',
+            fg='#000000',
+            justify='center',
+            bd=2,
+            relief=tk.SUNKEN
+        )
+        self.target_entry.pack(side=tk.LEFT, padx=5)
+        
+        # Bind Enter key to set target
+        self.target_entry.bind('<Return>', lambda e: self.set_target())
+        
+        tk.Button(
+            target_entry_container,
+            text="SET",
+            font=('Arial', 12, 'bold'),
+            bg='#e94560',
+            fg='#ffffff',
+            activebackground='#ff6b6b',
+            command=self.set_target,
+            width=4,
+            height=1
+        ).pack(side=tk.LEFT, padx=5)
         
         # Right Panel - Controls
         right_frame = tk.Frame(main_frame, bg='#1a1a2e')
@@ -108,12 +139,12 @@ class RailwayAxleCounter:
         
         # Temperature Display
         temp_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
-        temp_frame.pack(fill=tk.X, pady=5)
+        temp_frame.pack(fill=tk.X, pady=3)
         
         tk.Label(
             temp_frame,
-            text="🌡️ AXLE TEMP",
-            font=('Arial', 11, 'bold'),
+            text="🌡️ TEMP",
+            font=('Arial', 10, 'bold'),
             bg='#16213e',
             fg='#ffffff'
         ).pack()
@@ -121,42 +152,43 @@ class RailwayAxleCounter:
         self.temp_label = tk.Label(
             temp_frame,
             text="--°C",
-            font=('Arial', 24, 'bold'),
+            font=('Arial', 20, 'bold'),
             bg='#16213e',
             fg='#00aaff'
         )
-        self.temp_label.pack(pady=5)
+        self.temp_label.pack(pady=3)
         
         self.hot_axle_label = tk.Label(
             temp_frame,
             text="",
-            font=('Arial', 10, 'bold'),
+            font=('Arial', 9, 'bold'),
             bg='#16213e',
             fg='#ff0000'
         )
         self.hot_axle_label.pack()
         
-        # Mode Toggle
+        # Mode Toggle - BIGGER BUTTON
         mode_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
         mode_frame.pack(fill=tk.X, pady=5)
         
         tk.Label(
             mode_frame,
-            text="MODE",
-            font=('Arial', 11, 'bold'),
+            text="OPERATION MODE",
+            font=('Arial', 10, 'bold'),
             bg='#16213e',
             fg='#ffffff'
         ).pack()
         
         self.mode_button = tk.Button(
             mode_frame,
-            text="COUNT",
-            font=('Arial', 12, 'bold'),
+            text="COUNT\nMODE",
+            font=('Arial', 11, 'bold'),
             bg='#0f3460',
             fg='#ffffff',
             activebackground='#e94560',
             command=self.toggle_mode,
-            width=10
+            width=10,
+            height=2
         )
         self.mode_button.pack(pady=5)
         
@@ -164,57 +196,24 @@ class RailwayAxleCounter:
         self.match_label = tk.Label(
             right_frame,
             text="",
-            font=('Arial', 14, 'bold'),
+            font=('Arial', 13, 'bold'),
             bg='#1a1a2e',
             fg='#00ff00'
         )
-        self.match_label.pack(pady=5)
+        self.match_label.pack(pady=3)
         
-        # Bottom Panel - Target Entry
-        bottom_frame = tk.Frame(self.root, bg='#0f3460')
-        bottom_frame.pack(fill=tk.X, padx=10, pady=5)
-        
-        # Target entry
-        entry_frame = tk.Frame(bottom_frame, bg='#0f3460')
-        entry_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        tk.Label(
-            entry_frame,
-            text="Set Target:",
-            font=('Arial', 10, 'bold'),
-            bg='#0f3460',
-            fg='#ffffff'
-        ).pack(side=tk.LEFT, padx=5)
-        
-        self.target_entry = tk.Entry(
-            entry_frame,
-            font=('Arial', 14),
-            width=5,
-            bg='#ffffff',
-            fg='#000000'
-        )
-        self.target_entry.pack(side=tk.LEFT, padx=5)
-        
+        # Reset Button
         tk.Button(
-            entry_frame,
-            text="SET",
-            font=('Arial', 10, 'bold'),
-            bg='#e94560',
-            fg='#ffffff',
-            command=self.set_target,
-            width=5
-        ).pack(side=tk.LEFT, padx=5)
-        
-        # Reset button
-        tk.Button(
-            bottom_frame,
-            text="RESET",
+            right_frame,
+            text="RESET\nCOUNT",
             font=('Arial', 10, 'bold'),
             bg='#ff6b6b',
             fg='#ffffff',
+            activebackground='#ff4444',
             command=self.reset_count,
-            width=8
-        ).pack(side=tk.RIGHT, padx=5)
+            width=10,
+            height=2
+        ).pack(pady=3)
         
         # Status bar
         self.status_label = tk.Label(
@@ -356,33 +355,51 @@ class RailwayAxleCounter:
         self.compare_mode = not self.compare_mode
         
         if self.compare_mode:
-            self.mode_button.config(text="COMPARE", bg='#e94560')
+            self.mode_button.config(text="COMPARE\nMODE", bg='#e94560')
             self.send_to_uno("MODE:COMPARE\n")
+            self.update_status("Mode: COMPARE - Set target and count")
+            # Focus on target entry
+            self.target_entry.focus_set()
         else:
-            self.mode_button.config(text="COUNT", bg='#0f3460')
+            self.mode_button.config(text="COUNT\nMODE", bg='#0f3460')
             self.send_to_uno("MODE:COUNT\n")
             self.match_label.config(text="")
+            self.update_status("Mode: COUNT ONLY")
     
     def set_target(self):
         try:
-            target = int(self.target_entry.get())
+            target_text = self.target_entry.get().strip()
+            if target_text == "":
+                self.update_status("Please enter a target number")
+                return
+                
+            target = int(target_text)
             if 0 <= target <= 99:
                 self.target_count = target
                 self.target_label.config(text=f"{target:02d}")
                 self.send_to_uno(f"TARGET:{target}\n")
-                self.update_status(f"Target set to {target}")
+                self.update_status(f"✓ Target set to {target}")
                 self.target_entry.delete(0, tk.END)
+                
+                # Flash the target label
+                self.flash_target_label()
             else:
-                self.update_status("Target must be 0-99")
+                self.update_status("⚠ Target must be 0-99")
         except ValueError:
-            self.update_status("Invalid target number")
+            self.update_status("⚠ Invalid number - enter digits only")
+    
+    def flash_target_label(self):
+        """Flash target label to confirm setting"""
+        original_bg = self.target_label.cget('bg')
+        self.target_label.config(bg='#e94560')
+        self.root.after(200, lambda: self.target_label.config(bg=original_bg))
     
     def reset_count(self):
         self.send_to_uno("RESET\n")
         self.axle_count = 0
         self.update_count_display()
         self.match_label.config(text="")
-        self.update_status("Count reset")
+        self.update_status("✓ Count reset to 0")
     
     def send_to_uno(self, message):
         try:
@@ -410,3 +427,76 @@ if __name__ == "__main__":
     app = RailwayAxleCounter(root)
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
+```
+
+---
+
+## ✨ KEY IMPROVEMENTS
+
+### 1. **Target Entry is Always Visible**
+- No longer hidden at the bottom
+- Prominently placed right below the target display
+- Bigger text box (16pt font)
+- Clear SET button next to it
+
+### 2. **Better Visual Feedback**
+- Target label flashes red when you set a new target
+- Status bar shows confirmation messages
+- Entry box is centered and easy to see
+
+### 3. **Keyboard Support**
+- Press **Enter** after typing target number to set it
+- No need to click the SET button
+
+### 4. **Workflow Hints**
+- When you switch to COMPARE mode, status bar says "Set target and count"
+- Cursor automatically focuses on target entry box
+
+---
+
+## 🎯 HOW TO USE IT
+
+### **Step 1: Set Target**
+1. Look at the "TARGET AXLES" section (middle left)
+2. Type number in the white box (e.g., type `05`)
+3. Click **SET** button (or press Enter)
+4. Target number shows in large orange digits
+5. Target label flashes to confirm
+
+### **Step 2: Choose Mode**
+- Click **COUNT MODE** button → changes to **COMPARE MODE** (turns red)
+- In COMPARE mode: system will compare count vs target
+- In COUNT mode: system just counts
+
+### **Step 3: Start Counting**
+- Wave hand near ultrasonic sensor
+- Watch count increase
+- If in COMPARE mode and count = target → see green "✓ MATCH!"
+
+### **Step 4: Reset**
+- Click **RESET COUNT** button to start over
+
+---
+
+## 🎨 NEW LAYOUT
+```
+┌─────────────────────────────────────────────┐
+│       🚂 RAILWAY AXLE COUNTER               │
+├──────────────────────┬──────────────────────┤
+│  AXLE COUNT          │  🌡️ TEMP             │
+│      42              │     25.3°C           │
+│                      │     Normal           │
+│  TARGET AXLES        │                      │
+│      05              │  OPERATION MODE      │
+│                      │  ┌────────────────┐  │
+│   [  5 ] [SET]       │  │ COMPARE MODE   │  │
+│                      │  └────────────────┘  │
+│                      │                      │
+│                      │    ✓ MATCH!          │
+│                      │                      │
+│                      │  ┌────────────────┐  │
+│                      │  │ RESET COUNT    │  │
+│                      │  └────────────────┘  │
+└──────────────────────┴──────────────────────┘
+│ [10:45:23] Target set to 5                  │
+└─────────────────────────────────────────────┘
