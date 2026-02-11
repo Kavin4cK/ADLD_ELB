@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import tkinter as tk
-from tkinter import font as tkfont
+from tkinter import font as tkfont, simpledialog
 import serial
 import threading
 import time
@@ -46,7 +46,7 @@ class RailwayAxleCounter:
         title_label = tk.Label(
             title_frame,
             text="🚂 RAILWAY AXLE COUNTER",
-            font=('Arial', 14, 'bold'),
+            font=('Arial', 16, 'bold'),
             bg='#0f3460',
             fg='#ffffff'
         )
@@ -62,12 +62,12 @@ class RailwayAxleCounter:
         
         # Axle Count Display
         count_frame = tk.Frame(left_frame, bg='#16213e', relief=tk.RAISED, bd=2)
-        count_frame.pack(fill=tk.X, pady=3)
+        count_frame.pack(fill=tk.X, pady=5)
         
         tk.Label(
             count_frame,
             text="AXLE COUNT",
-            font=('Arial', 11, 'bold'),
+            font=('Arial', 12, 'bold'),
             bg='#16213e',
             fg='#e94560'
         ).pack()
@@ -75,63 +75,32 @@ class RailwayAxleCounter:
         self.count_label = tk.Label(
             count_frame,
             text="00",
-            font=('Arial', 42, 'bold'),
+            font=('Arial', 48, 'bold'),
             bg='#16213e',
             fg='#00ff00'
         )
-        self.count_label.pack(pady=5)
+        self.count_label.pack(pady=10)
         
-        # Target Display with Entry
+        # Target Display (NO ENTRY BOX HERE)
         target_frame = tk.Frame(left_frame, bg='#16213e', relief=tk.RAISED, bd=2)
-        target_frame.pack(fill=tk.X, pady=3)
+        target_frame.pack(fill=tk.X, pady=5)
         
         tk.Label(
             target_frame,
-            text="TARGET AXLES",
-            font=('Arial', 11, 'bold'),
+            text="TARGET",
+            font=('Arial', 12, 'bold'),
             bg='#16213e',
             fg='#e94560'
         ).pack()
         
         self.target_label = tk.Label(
             target_frame,
-            text="00",
-            font=('Arial', 32, 'bold'),
+            text="--",
+            font=('Arial', 36, 'bold'),
             bg='#16213e',
             fg='#ffaa00'
         )
-        self.target_label.pack(pady=3)
-        
-        # Target Entry Section (always visible)
-        target_entry_container = tk.Frame(target_frame, bg='#16213e')
-        target_entry_container.pack(pady=5)
-        
-        self.target_entry = tk.Entry(
-            target_entry_container,
-            font=('Arial', 16, 'bold'),
-            width=4,
-            bg='#ffffff',
-            fg='#000000',
-            justify='center',
-            bd=2,
-            relief=tk.SUNKEN
-        )
-        self.target_entry.pack(side=tk.LEFT, padx=5)
-        
-        # Bind Enter key to set target
-        self.target_entry.bind('<Return>', lambda e: self.set_target())
-        
-        tk.Button(
-            target_entry_container,
-            text="SET",
-            font=('Arial', 12, 'bold'),
-            bg='#e94560',
-            fg='#ffffff',
-            activebackground='#ff6b6b',
-            command=self.set_target,
-            width=4,
-            height=1
-        ).pack(side=tk.LEFT, padx=5)
+        self.target_label.pack(pady=5)
         
         # Right Panel - Controls
         right_frame = tk.Frame(main_frame, bg='#1a1a2e')
@@ -139,12 +108,12 @@ class RailwayAxleCounter:
         
         # Temperature Display
         temp_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
-        temp_frame.pack(fill=tk.X, pady=3)
+        temp_frame.pack(fill=tk.X, pady=5)
         
         tk.Label(
             temp_frame,
-            text="🌡️ TEMP",
-            font=('Arial', 10, 'bold'),
+            text="🌡️ AXLE TEMP",
+            font=('Arial', 11, 'bold'),
             bg='#16213e',
             fg='#ffffff'
         ).pack()
@@ -152,37 +121,37 @@ class RailwayAxleCounter:
         self.temp_label = tk.Label(
             temp_frame,
             text="--°C",
-            font=('Arial', 20, 'bold'),
+            font=('Arial', 24, 'bold'),
             bg='#16213e',
             fg='#00aaff'
         )
-        self.temp_label.pack(pady=3)
+        self.temp_label.pack(pady=5)
         
         self.hot_axle_label = tk.Label(
             temp_frame,
             text="",
-            font=('Arial', 9, 'bold'),
+            font=('Arial', 10, 'bold'),
             bg='#16213e',
             fg='#ff0000'
         )
         self.hot_axle_label.pack()
         
-        # Mode Toggle - BIGGER BUTTON
+        # Mode Toggle Button - LARGER
         mode_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
         mode_frame.pack(fill=tk.X, pady=5)
         
         tk.Label(
             mode_frame,
-            text="OPERATION MODE",
-            font=('Arial', 10, 'bold'),
+            text="MODE",
+            font=('Arial', 11, 'bold'),
             bg='#16213e',
             fg='#ffffff'
         ).pack()
         
         self.mode_button = tk.Button(
             mode_frame,
-            text="COUNT\nMODE",
-            font=('Arial', 11, 'bold'),
+            text="COUNT",
+            font=('Arial', 14, 'bold'),
             bg='#0f3460',
             fg='#ffffff',
             activebackground='#e94560',
@@ -196,24 +165,27 @@ class RailwayAxleCounter:
         self.match_label = tk.Label(
             right_frame,
             text="",
-            font=('Arial', 13, 'bold'),
+            font=('Arial', 14, 'bold'),
             bg='#1a1a2e',
             fg='#00ff00'
         )
-        self.match_label.pack(pady=3)
+        self.match_label.pack(pady=5)
         
-        # Reset Button
+        # Bottom Panel - Reset Button
+        bottom_frame = tk.Frame(self.root, bg='#0f3460')
+        bottom_frame.pack(fill=tk.X, padx=10, pady=5)
+        
         tk.Button(
-            right_frame,
-            text="RESET\nCOUNT",
-            font=('Arial', 10, 'bold'),
+            bottom_frame,
+            text="RESET COUNT",
+            font=('Arial', 12, 'bold'),
             bg='#ff6b6b',
             fg='#ffffff',
             activebackground='#ff4444',
             command=self.reset_count,
-            width=10,
-            height=2
-        ).pack(pady=3)
+            width=15,
+            height=1
+        ).pack(pady=5)
         
         # Status bar
         self.status_label = tk.Label(
@@ -227,14 +199,14 @@ class RailwayAxleCounter:
         self.status_label.pack(fill=tk.X, side=tk.BOTTOM)
         
     def connect_arduinos(self):
-        # CORRECT PORTS (from your test results)
+        # CORRECT PORTS
         UNO_PORT = '/dev/ttyACM0'
         NANO_PORT = '/dev/ttyUSB0'
         
         # Connect to UNO
         try:
             self.uno_serial = serial.Serial(UNO_PORT, 115200, timeout=1)
-            time.sleep(2)  # Wait for Arduino to reset
+            time.sleep(2)
             self.update_status(f"✓ UNO connected on {UNO_PORT}")
             print(f"UNO connected: {UNO_PORT}")
         except Exception as e:
@@ -265,7 +237,7 @@ class RailwayAxleCounter:
             try:
                 if self.uno_serial and self.uno_serial.in_waiting:
                     line = self.uno_serial.readline().decode('utf-8', errors='ignore').strip()
-                    if line:  # Only process non-empty lines
+                    if line:
                         print(f"UNO → {line}")
                         self.process_uno_message(line)
             except Exception as e:
@@ -277,7 +249,7 @@ class RailwayAxleCounter:
             try:
                 if self.nano_serial and self.nano_serial.in_waiting:
                     line = self.nano_serial.readline().decode('utf-8', errors='ignore').strip()
-                    if line:  # Only process non-empty lines
+                    if line:
                         print(f"NANO → {line}")
                         self.process_nano_message(line)
             except Exception as e:
@@ -294,7 +266,6 @@ class RailwayAxleCounter:
         elif msg == "UNO_READY":
             self.update_status("UNO Ready")
         elif msg.startswith("DEBUG:"):
-            # Optional: handle debug messages
             pass
     
     def process_nano_message(self, msg):
@@ -310,7 +281,6 @@ class RailwayAxleCounter:
         elif msg == "NANO_READY":
             self.update_status("Nano Ready")
         elif msg.startswith("DEBUG:"):
-            # Optional: handle debug messages
             pass
     
     def update_count_display(self):
@@ -328,10 +298,9 @@ class RailwayAxleCounter:
             self.count_label.config(fg='#00ff00')  # Green = normal count
     
     def update_temp_display(self):
-        if self.temperature > -50:  # Valid reading
+        if self.temperature > -50:
             self.temp_label.config(text=f"{self.temperature:.1f}°C")
             
-            # Color code by temperature
             if self.temperature > 80:
                 self.temp_label.config(fg='#ff0000')
                 self.hot_axle_label.config(text="⚠️ HOT AXLE!")
@@ -352,47 +321,134 @@ class RailwayAxleCounter:
             self.match_label.config(text="")
     
     def toggle_mode(self):
-        self.compare_mode = not self.compare_mode
-        
-        if self.compare_mode:
-            self.mode_button.config(text="COMPARE\nMODE", bg='#e94560')
-            self.send_to_uno("MODE:COMPARE\n")
-            self.update_status("Mode: COMPARE - Set target and count")
-            # Focus on target entry
-            self.target_entry.focus_set()
-        else:
-            self.mode_button.config(text="COUNT\nMODE", bg='#0f3460')
-            self.send_to_uno("MODE:COUNT\n")
-            self.match_label.config(text="")
-            self.update_status("Mode: COUNT ONLY")
-    
-    def set_target(self):
-        try:
-            target_text = self.target_entry.get().strip()
-            if target_text == "":
-                self.update_status("Please enter a target number")
-                return
-                
-            target = int(target_text)
-            if 0 <= target <= 99:
+        if not self.compare_mode:
+            # Switching TO compare mode - show popup to enter target
+            target = self.show_target_entry_dialog()
+            
+            if target is not None:  # User entered a valid target
+                self.compare_mode = True
                 self.target_count = target
                 self.target_label.config(text=f"{target:02d}")
+                self.mode_button.config(text="COMPARE", bg='#e94560')
+                self.send_to_uno("MODE:COMPARE\n")
                 self.send_to_uno(f"TARGET:{target}\n")
-                self.update_status(f"✓ Target set to {target}")
-                self.target_entry.delete(0, tk.END)
-                
-                # Flash the target label
-                self.flash_target_label()
+                self.update_status(f"Compare mode - Target: {target}")
             else:
-                self.update_status("⚠ Target must be 0-99")
-        except ValueError:
-            self.update_status("⚠ Invalid number - enter digits only")
+                # User cancelled - stay in count mode
+                self.update_status("Cancelled - staying in COUNT mode")
+        else:
+            # Switching FROM compare mode to count mode
+            self.compare_mode = False
+            self.mode_button.config(text="COUNT", bg='#0f3460')
+            self.send_to_uno("MODE:COUNT\n")
+            self.match_label.config(text="")
+            self.target_label.config(text="--")
+            self.target_count = 0
+            self.update_status("Count mode - no target")
     
-    def flash_target_label(self):
-        """Flash target label to confirm setting"""
-        original_bg = self.target_label.cget('bg')
-        self.target_label.config(bg='#e94560')
-        self.root.after(200, lambda: self.target_label.config(bg=original_bg))
+    def show_target_entry_dialog(self):
+        """Show a custom popup dialog to enter target number"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Set Target Axle Count")
+        dialog.geometry("350x200")
+        dialog.configure(bg='#1a1a2e')
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Center the dialog
+        dialog.update_idletasks()
+        x = (dialog.winfo_screenwidth() // 2) - (350 // 2)
+        y = (dialog.winfo_screenheight() // 2) - (200 // 2)
+        dialog.geometry(f"350x200+{x}+{y}")
+        
+        result = [None]  # Use list to store result from inner function
+        
+        # Title
+        tk.Label(
+            dialog,
+            text="Enter Target Axle Count",
+            font=('Arial', 16, 'bold'),
+            bg='#1a1a2e',
+            fg='#e94560'
+        ).pack(pady=20)
+        
+        # Entry box
+        entry_frame = tk.Frame(dialog, bg='#1a1a2e')
+        entry_frame.pack(pady=10)
+        
+        entry = tk.Entry(
+            entry_frame,
+            font=('Arial', 24, 'bold'),
+            width=5,
+            bg='#ffffff',
+            fg='#000000',
+            justify='center',
+            bd=3,
+            relief=tk.SUNKEN
+        )
+        entry.pack()
+        entry.focus_set()
+        
+        # Error label
+        error_label = tk.Label(
+            dialog,
+            text="",
+            font=('Arial', 10),
+            bg='#1a1a2e',
+            fg='#ff6b6b'
+        )
+        error_label.pack()
+        
+        def submit():
+            try:
+                value = int(entry.get())
+                if 1 <= value <= 99:
+                    result[0] = value
+                    dialog.destroy()
+                else:
+                    error_label.config(text="Please enter 1-99")
+            except ValueError:
+                error_label.config(text="Invalid number")
+        
+        def cancel():
+            result[0] = None
+            dialog.destroy()
+        
+        # Bind Enter key
+        entry.bind('<Return>', lambda e: submit())
+        
+        # Buttons
+        button_frame = tk.Frame(dialog, bg='#1a1a2e')
+        button_frame.pack(pady=15)
+        
+        tk.Button(
+            button_frame,
+            text="SET TARGET",
+            font=('Arial', 12, 'bold'),
+            bg='#e94560',
+            fg='#ffffff',
+            activebackground='#ff6b6b',
+            command=submit,
+            width=12,
+            height=1
+        ).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(
+            button_frame,
+            text="CANCEL",
+            font=('Arial', 12, 'bold'),
+            bg='#0f3460',
+            fg='#ffffff',
+            activebackground='#1a3a5a',
+            command=cancel,
+            width=12,
+            height=1
+        ).pack(side=tk.LEFT, padx=5)
+        
+        # Wait for dialog to close
+        dialog.wait_window()
+        
+        return result[0]
     
     def reset_count(self):
         self.send_to_uno("RESET\n")
@@ -427,76 +483,3 @@ if __name__ == "__main__":
     app = RailwayAxleCounter(root)
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
-
-
-
-'''
-## ✨ KEY IMPROVEMENTS
-
-### 1. **Target Entry is Always Visible**
-- No longer hidden at the bottom
-- Prominently placed right below the target display
-- Bigger text box (16pt font)
-- Clear SET button next to it
-
-### 2. **Better Visual Feedback**
-- Target label flashes red when you set a new target
-- Status bar shows confirmation messages
-- Entry box is centered and easy to see
-
-### 3. **Keyboard Support**
-- Press **Enter** after typing target number to set it
-- No need to click the SET button
-
-### 4. **Workflow Hints**
-- When you switch to COMPARE mode, status bar says "Set target and count"
-- Cursor automatically focuses on target entry box
-
----
-
-## 🎯 HOW TO USE IT
-
-### **Step 1: Set Target**
-1. Look at the "TARGET AXLES" section (middle left)
-2. Type number in the white box (e.g., type `05`)
-3. Click **SET** button (or press Enter)
-4. Target number shows in large orange digits
-5. Target label flashes to confirm
-
-### **Step 2: Choose Mode**
-- Click **COUNT MODE** button → changes to **COMPARE MODE** (turns red)
-- In COMPARE mode: system will compare count vs target
-- In COUNT mode: system just counts
-
-### **Step 3: Start Counting**
-- Wave hand near ultrasonic sensor
-- Watch count increase
-- If in COMPARE mode and count = target → see green "✓ MATCH!"
-
-### **Step 4: Reset**
-- Click **RESET COUNT** button to start over
-
----
-
-## 🎨 NEW LAYOUT
-```
-┌─────────────────────────────────────────────┐
-│       🚂 RAILWAY AXLE COUNTER               │
-├──────────────────────┬──────────────────────┤
-│  AXLE COUNT          │  🌡️ TEMP             │
-│      42              │     25.3°C           │
-│                      │     Normal           │
-│  TARGET AXLES        │                      │
-│      05              │  OPERATION MODE      │
-│                      │  ┌────────────────┐  │
-│   [  5 ] [SET]       │  │ COMPARE MODE   │  │
-│                      │  └────────────────┘  │
-│                      │                      │
-│                      │    ✓ MATCH!          │
-│                      │                      │
-│                      │  ┌────────────────┐  │
-│                      │  │ RESET COUNT    │  │
-│                      │  └────────────────┘  │
-└──────────────────────┴──────────────────────┘
-│ [10:45:23] Target set to 5                  │
-└─────────────────────────────────────────────┘'''
