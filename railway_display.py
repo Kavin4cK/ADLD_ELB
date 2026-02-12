@@ -11,7 +11,6 @@ class RailwayAxleCounter:
         self.root = root
         self.root.title("Railway Axle Counter System - ADLD Project")
         
-        # Make window larger to accommodate circuit viewer
         self.root.geometry("800x600")
         self.root.configure(bg='#1a1a2e')
         
@@ -25,10 +24,11 @@ class RailwayAxleCounter:
         
         # Serial ports
         self.uno_serial = None
-        self.nano_serial = None
+        self.nano_temp_serial = None
+        self.nano_led_serial = None
         self.serial_lock = threading.Lock()
         
-        # Setup GUI with scrollbar
+        # Setup GUI
         self.setup_gui()
         
         # Connect to Arduinos
@@ -43,11 +43,9 @@ class RailwayAxleCounter:
         main_container = tk.Frame(self.root, bg='#1a1a2e')
         main_container.pack(fill=tk.BOTH, expand=True)
         
-        # Create canvas and scrollbar
         canvas = tk.Canvas(main_container, bg='#1a1a2e', highlightthickness=0)
         scrollbar = tk.Scrollbar(main_container, orient="vertical", command=canvas.yview)
         
-        # Create scrollable frame
         self.scrollable_frame = tk.Frame(canvas, bg='#1a1a2e')
         
         self.scrollable_frame.bind(
@@ -61,17 +59,12 @@ class RailwayAxleCounter:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
-        # Bind mouse wheel
         canvas.bind_all("<MouseWheel>", lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
         
-        # ============ SECTION 1: MAIN CONTROL PANEL ============
         self.create_control_panel()
-        
-        # ============ SECTION 2: CIRCUIT VISUALIZER ============
         self.create_circuit_visualizer()
         
     def create_control_panel(self):
-        """Original control panel - top section"""
         control_container = tk.Frame(self.scrollable_frame, bg='#1a1a2e')
         control_container.pack(fill=tk.X, padx=10, pady=5)
         
@@ -88,15 +81,15 @@ class RailwayAxleCounter:
         )
         title_label.pack(pady=5)
         
-        # Main content area
+        # Main content
         main_frame = tk.Frame(control_container, bg='#1a1a2e')
         main_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # Left Panel - Counters
+        # Left Panel
         left_frame = tk.Frame(main_frame, bg='#1a1a2e')
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Axle Count Display
+        # Axle Count
         count_frame = tk.Frame(left_frame, bg='#16213e', relief=tk.RAISED, bd=2)
         count_frame.pack(fill=tk.X, pady=5)
         
@@ -117,7 +110,7 @@ class RailwayAxleCounter:
         )
         self.count_label.pack(pady=10)
         
-        # Target Display
+        # Target
         target_frame = tk.Frame(left_frame, bg='#16213e', relief=tk.RAISED, bd=2)
         target_frame.pack(fill=tk.X, pady=5)
         
@@ -138,11 +131,11 @@ class RailwayAxleCounter:
         )
         self.target_label.pack(pady=5)
         
-        # Right Panel - Controls
+        # Right Panel
         right_frame = tk.Frame(main_frame, bg='#1a1a2e')
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=5)
         
-        # Temperature Display
+        # Temperature
         temp_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
         temp_frame.pack(fill=tk.X, pady=5)
         
@@ -171,6 +164,27 @@ class RailwayAxleCounter:
             fg='#ff0000'
         )
         self.hot_axle_label.pack()
+        
+        # LED Controller Status
+        led_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
+        led_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(
+            led_frame,
+            text="🔴 ALERT LED",
+            font=('Arial', 10, 'bold'),
+            bg='#16213e',
+            fg='#ffffff'
+        ).pack()
+        
+        self.led_status_label = tk.Label(
+            led_frame,
+            text="OFF",
+            font=('Arial', 9),
+            bg='#16213e',
+            fg='#888888'
+        )
+        self.led_status_label.pack(pady=3)
         
         # Mode Toggle
         mode_frame = tk.Frame(right_frame, bg='#16213e', relief=tk.RAISED, bd=2)
@@ -231,13 +245,10 @@ class RailwayAxleCounter:
         )
         self.status_label.pack(fill=tk.X)
         
-        # Separator
         tk.Frame(self.scrollable_frame, height=3, bg='#e94560').pack(fill=tk.X, pady=10)
     
     def create_circuit_visualizer(self):
-        """Circuit diagram and 7-segment visualizer - scroll down to see"""
-        
-        # Section Title
+        # Circuit title
         circuit_title = tk.Frame(self.scrollable_frame, bg='#0f3460')
         circuit_title.pack(fill=tk.X, padx=10, pady=5)
         
@@ -249,11 +260,10 @@ class RailwayAxleCounter:
             fg='#ffffff'
         ).pack(pady=8)
         
-        # Main circuit container
         circuit_frame = tk.Frame(self.scrollable_frame, bg='#16213e', relief=tk.RAISED, bd=3)
         circuit_frame.pack(fill=tk.BOTH, padx=10, pady=5)
         
-        # ===== DECIMAL TO BINARY CONVERSION =====
+        # Conversion section
         conversion_frame = tk.Frame(circuit_frame, bg='#1a2332', relief=tk.GROOVE, bd=2)
         conversion_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -269,209 +279,87 @@ class RailwayAxleCounter:
         tens_frame = tk.Frame(conversion_frame, bg='#1a2332')
         tens_frame.pack(pady=5)
         
-        tk.Label(
-            tens_frame,
-            text="TENS DIGIT:",
-            font=('Arial', 11, 'bold'),
-            bg='#1a2332',
-            fg='#ffffff'
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Label(tens_frame, text="TENS DIGIT:", font=('Arial', 11, 'bold'), bg='#1a2332', fg='#ffffff').pack(side=tk.LEFT, padx=5)
         
-        self.tens_decimal_label = tk.Label(
-            tens_frame,
-            text="0",
-            font=('Arial', 18, 'bold'),
-            bg='#000000',
-            fg='#00ff00',
-            width=3,
-            relief=tk.SUNKEN,
-            bd=2
-        )
+        self.tens_decimal_label = tk.Label(tens_frame, text="0", font=('Arial', 18, 'bold'), bg='#000000', fg='#00ff00', width=3, relief=tk.SUNKEN, bd=2)
         self.tens_decimal_label.pack(side=tk.LEFT, padx=5)
         
-        tk.Label(
-            tens_frame,
-            text="→",
-            font=('Arial', 16, 'bold'),
-            bg='#1a2332',
-            fg='#ffaa00'
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Label(tens_frame, text="→", font=('Arial', 16, 'bold'), bg='#1a2332', fg='#ffaa00').pack(side=tk.LEFT, padx=5)
         
-        # Tens BCD bits
         self.tens_bcd_labels = []
         for i in range(4):
-            label = tk.Label(
-                tens_frame,
-                text="0",
-                font=('Arial', 16, 'bold'),
-                bg='#000000',
-                fg='#ff0000',
-                width=2,
-                relief=tk.RAISED,
-                bd=3
-            )
+            label = tk.Label(tens_frame, text="0", font=('Arial', 16, 'bold'), bg='#000000', fg='#ff0000', width=2, relief=tk.RAISED, bd=3)
             label.pack(side=tk.LEFT, padx=2)
             self.tens_bcd_labels.append(label)
         
-        tk.Label(
-            tens_frame,
-            text="D C B A",
-            font=('Arial', 9),
-            bg='#1a2332',
-            fg='#888888'
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Label(tens_frame, text="D C B A", font=('Arial', 9), bg='#1a2332', fg='#888888').pack(side=tk.LEFT, padx=5)
         
         # Ones digit
         ones_frame = tk.Frame(conversion_frame, bg='#1a2332')
         ones_frame.pack(pady=5)
         
-        tk.Label(
-            ones_frame,
-            text="ONES DIGIT:",
-            font=('Arial', 11, 'bold'),
-            bg='#1a2332',
-            fg='#ffffff'
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Label(ones_frame, text="ONES DIGIT:", font=('Arial', 11, 'bold'), bg='#1a2332', fg='#ffffff').pack(side=tk.LEFT, padx=5)
         
-        self.ones_decimal_label = tk.Label(
-            ones_frame,
-            text="0",
-            font=('Arial', 18, 'bold'),
-            bg='#000000',
-            fg='#00ff00',
-            width=3,
-            relief=tk.SUNKEN,
-            bd=2
-        )
+        self.ones_decimal_label = tk.Label(ones_frame, text="0", font=('Arial', 18, 'bold'), bg='#000000', fg='#00ff00', width=3, relief=tk.SUNKEN, bd=2)
         self.ones_decimal_label.pack(side=tk.LEFT, padx=5)
         
-        tk.Label(
-            ones_frame,
-            text="→",
-            font=('Arial', 16, 'bold'),
-            bg='#1a2332',
-            fg='#ffaa00'
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Label(ones_frame, text="→", font=('Arial', 16, 'bold'), bg='#1a2332', fg='#ffaa00').pack(side=tk.LEFT, padx=5)
         
-        # Ones BCD bits
         self.ones_bcd_labels = []
         for i in range(4):
-            label = tk.Label(
-                ones_frame,
-                text="0",
-                font=('Arial', 16, 'bold'),
-                bg='#000000',
-                fg='#ff0000',
-                width=2,
-                relief=tk.RAISED,
-                bd=3
-            )
+            label = tk.Label(ones_frame, text="0", font=('Arial', 16, 'bold'), bg='#000000', fg='#ff0000', width=2, relief=tk.RAISED, bd=3)
             label.pack(side=tk.LEFT, padx=2)
             self.ones_bcd_labels.append(label)
         
-        tk.Label(
-            ones_frame,
-            text="D C B A",
-            font=('Arial', 9),
-            bg='#1a2332',
-            fg='#888888'
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Label(ones_frame, text="D C B A", font=('Arial', 9), bg='#1a2332', fg='#888888').pack(side=tk.LEFT, padx=5)
         
-        # ===== CD4511 DECODER VISUALIZATION =====
+        # Decoder
         decoder_frame = tk.Frame(circuit_frame, bg='#1a2332', relief=tk.GROOVE, bd=2)
         decoder_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        tk.Label(
-            decoder_frame,
-            text="CD4511 BCD-TO-7-SEGMENT DECODER",
-            font=('Arial', 12, 'bold'),
-            bg='#1a2332',
-            fg='#00ff88'
-        ).pack(pady=5)
+        tk.Label(decoder_frame, text="CD4511 BCD-TO-7-SEGMENT DECODER", font=('Arial', 12, 'bold'), bg='#1a2332', fg='#00ff88').pack(pady=5)
+        tk.Label(decoder_frame, text="Arduino UNO Pins → BCD Input → CD4511 → 7-Segment Display", font=('Arial', 10), bg='#1a2332', fg='#aaaaaa').pack(pady=3)
         
-        tk.Label(
-            decoder_frame,
-            text="Arduino UNO Pins → BCD Input → CD4511 → 7-Segment Display",
-            font=('Arial', 10),
-            bg='#1a2332',
-            fg='#aaaaaa'
-        ).pack(pady=3)
-        
-        # ===== 7-SEGMENT DISPLAYS =====
+        # 7-segment displays
         display_container = tk.Frame(circuit_frame, bg='#000000')
         display_container.pack(pady=20)
         
-        tk.Label(
-            display_container,
-            text="LIVE 7-SEGMENT DISPLAY",
-            font=('Arial', 12, 'bold'),
-            bg='#000000',
-            fg='#00ff88'
-        ).pack(pady=10)
+        tk.Label(display_container, text="LIVE 7-SEGMENT DISPLAY", font=('Arial', 12, 'bold'), bg='#000000', fg='#00ff88').pack(pady=10)
         
-        # Display frame
         displays_frame = tk.Frame(display_container, bg='#000000')
         displays_frame.pack()
         
-        # Tens display
         tens_display_frame = tk.Frame(displays_frame, bg='#000000')
         tens_display_frame.pack(side=tk.LEFT, padx=20)
-        
-        tk.Label(
-            tens_display_frame,
-            text="TENS",
-            font=('Arial', 10, 'bold'),
-            bg='#000000',
-            fg='#888888'
-        ).pack()
-        
+        tk.Label(tens_display_frame, text="TENS", font=('Arial', 10, 'bold'), bg='#000000', fg='#888888').pack()
         self.tens_canvas = tk.Canvas(tens_display_frame, width=100, height=150, bg='#000000', highlightthickness=0)
         self.tens_canvas.pack(pady=10)
         
-        # Ones display
         ones_display_frame = tk.Frame(displays_frame, bg='#000000')
         ones_display_frame.pack(side=tk.LEFT, padx=20)
-        
-        tk.Label(
-            ones_display_frame,
-            text="ONES",
-            font=('Arial', 10, 'bold'),
-            bg='#000000',
-            fg='#888888'
-        ).pack()
-        
+        tk.Label(ones_display_frame, text="ONES", font=('Arial', 10, 'bold'), bg='#000000', fg='#888888').pack()
         self.ones_canvas = tk.Canvas(ones_display_frame, width=100, height=150, bg='#000000', highlightthickness=0)
         self.ones_canvas.pack(pady=10)
         
-        # ===== PIN MAPPING TABLE =====
+        # Pin mapping
         pin_frame = tk.Frame(circuit_frame, bg='#1a2332', relief=tk.GROOVE, bd=2)
         pin_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        tk.Label(
-            pin_frame,
-            text="ARDUINO UNO PIN MAPPING",
-            font=('Arial', 11, 'bold'),
-            bg='#1a2332',
-            fg='#00ff88'
-        ).pack(pady=5)
+        tk.Label(pin_frame, text="ARDUINO UNO PIN MAPPING", font=('Arial', 11, 'bold'), bg='#1a2332', fg='#00ff88').pack(pady=5)
         
         pin_info = tk.Frame(pin_frame, bg='#1a2332')
         pin_info.pack(pady=5)
         
-        # Left column
         left_pins = tk.Frame(pin_info, bg='#1a2332')
         left_pins.pack(side=tk.LEFT, padx=20)
-        
         tk.Label(left_pins, text="ONES DIGIT BCD:", font=('Arial', 9, 'bold'), bg='#1a2332', fg='#ffaa00').pack(anchor=tk.W)
         tk.Label(left_pins, text="Pin D2 → A (bit 0)", font=('Arial', 9), bg='#1a2332', fg='#ffffff').pack(anchor=tk.W)
         tk.Label(left_pins, text="Pin D3 → B (bit 1)", font=('Arial', 9), bg='#1a2332', fg='#ffffff').pack(anchor=tk.W)
         tk.Label(left_pins, text="Pin D4 → C (bit 2)", font=('Arial', 9), bg='#1a2332', fg='#ffffff').pack(anchor=tk.W)
         tk.Label(left_pins, text="Pin D5 → D (bit 3)", font=('Arial', 9), bg='#1a2332', fg='#ffffff').pack(anchor=tk.W)
         
-        # Right column
         right_pins = tk.Frame(pin_info, bg='#1a2332')
         right_pins.pack(side=tk.LEFT, padx=20)
-        
         tk.Label(right_pins, text="TENS DIGIT BCD:", font=('Arial', 9, 'bold'), bg='#1a2332', fg='#ffaa00').pack(anchor=tk.W)
         tk.Label(right_pins, text="Pin D10 → A (bit 0)", font=('Arial', 9), bg='#1a2332', fg='#ffffff').pack(anchor=tk.W)
         tk.Label(right_pins, text="Pin D11 → B (bit 1)", font=('Arial', 9), bg='#1a2332', fg='#ffffff').pack(anchor=tk.W)
@@ -482,38 +370,22 @@ class RailwayAxleCounter:
         info_frame = tk.Frame(self.scrollable_frame, bg='#0f3460', relief=tk.RAISED, bd=2)
         info_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        tk.Label(
-            info_frame,
-            text="ADLD (Advanced Digital Logic Design) Project",
-            font=('Arial', 11, 'bold'),
-            bg='#0f3460',
-            fg='#ffffff'
-        ).pack(pady=3)
-        
-        tk.Label(
-            info_frame,
-            text="Railway Axle Counter with BCD Display & Temperature Monitoring",
-            font=('Arial', 9),
-            bg='#0f3460',
-            fg='#aaaaaa'
-        ).pack(pady=2)
-        
+        tk.Label(info_frame, text="ADLD (Advanced Digital Logic Design) Project", font=('Arial', 11, 'bold'), bg='#0f3460', fg='#ffffff').pack(pady=3)
+        tk.Label(info_frame, text="Railway Axle Counter with BCD Display, Temperature Monitoring & Serial LED Alert", font=('Arial', 9), bg='#0f3460', fg='#aaaaaa').pack(pady=2)
+    
     def draw_seven_segment(self, canvas, digit, color='#ff0000'):
-        """Draw a 7-segment display showing the given digit"""
         canvas.delete("all")
         
-        # Segment positions (x1, y1, x2, y2)
         segments = {
-            'a': [(20, 10, 80, 10), (25, 5, 75, 15)],   # top
-            'b': [(80, 10, 80, 60), (75, 15, 85, 55)],  # top-right
-            'c': [(80, 70, 80, 120), (75, 75, 85, 115)], # bottom-right
-            'd': [(20, 120, 80, 120), (25, 115, 75, 125)], # bottom
-            'e': [(20, 70, 20, 120), (15, 75, 25, 115)], # bottom-left
-            'f': [(20, 10, 20, 60), (15, 15, 25, 55)],  # top-left
-            'g': [(20, 65, 80, 65), (25, 60, 75, 70)]   # middle
+            'a': [(20, 10, 80, 10), (25, 5, 75, 15)],
+            'b': [(80, 10, 80, 60), (75, 15, 85, 55)],
+            'c': [(80, 70, 80, 120), (75, 75, 85, 115)],
+            'd': [(20, 120, 80, 120), (25, 115, 75, 125)],
+            'e': [(20, 70, 20, 120), (15, 75, 25, 115)],
+            'f': [(20, 10, 20, 60), (15, 15, 25, 55)],
+            'g': [(20, 65, 80, 65), (25, 60, 75, 70)]
         }
         
-        # Segment patterns for each digit (which segments to light up)
         patterns = {
             0: ['a', 'b', 'c', 'd', 'e', 'f'],
             1: ['b', 'c'],
@@ -527,39 +399,22 @@ class RailwayAxleCounter:
             9: ['a', 'b', 'c', 'd', 'f', 'g']
         }
         
-        # Draw all segments
         active_segments = patterns.get(digit, [])
         
         for seg_name, coords in segments.items():
             if seg_name in active_segments:
-                # Active segment - bright red
-                canvas.create_polygon(
-                    coords[1],
-                    fill=color,
-                    outline=color,
-                    width=2
-                )
+                canvas.create_polygon(coords[1], fill=color, outline=color, width=2)
             else:
-                # Inactive segment - dark gray
-                canvas.create_polygon(
-                    coords[1],
-                    fill='#1a1a1a',
-                    outline='#333333',
-                    width=1
-                )
+                canvas.create_polygon(coords[1], fill='#1a1a1a', outline='#333333', width=1)
     
     def update_circuit_visualizer(self):
-        """Update the circuit visualizer with current count"""
         tens = (self.axle_count // 10) % 10
         ones = self.axle_count % 10
         
-        # Update decimal labels
         self.tens_decimal_label.config(text=str(tens))
         self.ones_decimal_label.config(text=str(ones))
         
-        # Update BCD binary representation
         for i in range(4):
-            # Tens digit BCD
             bit_value = (tens >> i) & 1
             self.tens_bcd_labels[i].config(
                 text=str(bit_value),
@@ -567,7 +422,6 @@ class RailwayAxleCounter:
                 bg='#003300' if bit_value else '#330000'
             )
             
-            # Ones digit BCD
             bit_value = (ones >> i) & 1
             self.ones_bcd_labels[i].config(
                 text=str(bit_value),
@@ -575,14 +429,22 @@ class RailwayAxleCounter:
                 bg='#003300' if bit_value else '#330000'
             )
         
-        # Update 7-segment displays
         self.draw_seven_segment(self.tens_canvas, tens)
         self.draw_seven_segment(self.ones_canvas, ones)
     
     def connect_arduinos(self):
-        UNO_PORT = '/dev/ttyACM0'
-        NANO_PORT = '/dev/ttyUSB0'
+        """Connect to all three Arduinos via USB"""
         
+        # Try to find and connect to each Arduino
+        # UNO typically: /dev/ttyACM0
+        # Nano #1 (Temp): /dev/ttyUSB0
+        # Nano #2 (LED): /dev/ttyUSB1
+        
+        UNO_PORT = '/dev/ttyACM0'
+        NANO_TEMP_PORT = '/dev/ttyUSB0'
+        NANO_LED_PORT = '/dev/ttyUSB1'
+        
+        # Connect to UNO
         try:
             self.uno_serial = serial.Serial(UNO_PORT, 115200, timeout=1)
             time.sleep(2)
@@ -592,23 +454,38 @@ class RailwayAxleCounter:
             self.update_status(f"✗ UNO connection failed: {e}")
             print(f"UNO error: {e}")
         
+        # Connect to Nano #1 (Temperature)
         try:
-            self.nano_serial = serial.Serial(NANO_PORT, 115200, timeout=1)
+            self.nano_temp_serial = serial.Serial(NANO_TEMP_PORT, 115200, timeout=1)
             time.sleep(2)
-            self.update_status(f"✓ Nano connected on {NANO_PORT}")
-            print(f"Nano connected: {NANO_PORT}")
+            self.update_status(f"✓ Nano Temp connected on {NANO_TEMP_PORT}")
+            print(f"Nano Temp connected: {NANO_TEMP_PORT}")
         except Exception as e:
-            self.update_status(f"✗ Nano connection failed: {e}")
-            print(f"Nano error: {e}")
+            self.update_status(f"✗ Nano Temp connection failed: {e}")
+            print(f"Nano Temp error: {e}")
+        
+        # Connect to Nano #2 (LED Controller)
+        try:
+            self.nano_led_serial = serial.Serial(NANO_LED_PORT, 115200, timeout=1)
+            time.sleep(2)
+            self.update_status(f"✓ Nano LED connected on {NANO_LED_PORT}")
+            print(f"Nano LED connected: {NANO_LED_PORT}")
+        except Exception as e:
+            self.update_status(f"✗ Nano LED connection failed: {e}")
+            print(f"Nano LED error: {e}")
     
     def start_serial_threads(self):
         if self.uno_serial:
             uno_thread = threading.Thread(target=self.read_uno_serial, daemon=True)
             uno_thread.start()
         
-        if self.nano_serial:
-            nano_thread = threading.Thread(target=self.read_nano_serial, daemon=True)
-            nano_thread.start()
+        if self.nano_temp_serial:
+            nano_temp_thread = threading.Thread(target=self.read_nano_temp_serial, daemon=True)
+            nano_temp_thread.start()
+        
+        if self.nano_led_serial:
+            nano_led_thread = threading.Thread(target=self.read_nano_led_serial, daemon=True)
+            nano_led_thread.start()
     
     def read_uno_serial(self):
         while self.running:
@@ -622,31 +499,51 @@ class RailwayAxleCounter:
                 print(f"UNO read error: {e}")
             time.sleep(0.01)
     
-    def read_nano_serial(self):
+    def read_nano_temp_serial(self):
         while self.running:
             try:
-                if self.nano_serial and self.nano_serial.in_waiting:
-                    line = self.nano_serial.readline().decode('utf-8', errors='ignore').strip()
+                if self.nano_temp_serial and self.nano_temp_serial.in_waiting:
+                    line = self.nano_temp_serial.readline().decode('utf-8', errors='ignore').strip()
                     if line:
-                        print(f"NANO → {line}")
-                        self.process_nano_message(line)
+                        print(f"NANO_TEMP → {line}")
+                        self.process_nano_temp_message(line)
             except Exception as e:
-                print(f"Nano read error: {e}")
+                print(f"Nano Temp read error: {e}")
+            time.sleep(0.01)
+    
+    def read_nano_led_serial(self):
+        while self.running:
+            try:
+                if self.nano_led_serial and self.nano_led_serial.in_waiting:
+                    line = self.nano_led_serial.readline().decode('utf-8', errors='ignore').strip()
+                    if line:
+                        print(f"NANO_LED → {line}")
+                        self.process_nano_led_message(line)
+            except Exception as e:
+                print(f"Nano LED read error: {e}")
             time.sleep(0.01)
     
     def process_uno_message(self, msg):
         if msg.startswith("COUNT:"):
             self.axle_count = int(msg.split(":")[1])
             self.update_count_display()
-            self.update_circuit_visualizer()  # Update circuit view!
+            self.update_circuit_visualizer()
         elif msg.startswith("MATCH:"):
-            self.match_status = (msg.split(":")[1] == "TRUE")
-            self.update_match_display()
+            match = (msg.split(":")[1] == "TRUE")
+            if match and not self.match_status:
+                # Target just reached!
+                self.match_status = True
+                self.update_match_display()
+                self.send_to_led_nano("TARGET_REACHED\n")
+                self.update_status("🎯 TARGET REACHED - Signal sent to LED Nano!")
+            elif not match:
+                self.match_status = False
+                self.update_match_display()
         elif msg == "UNO_READY":
             self.update_status("UNO Ready")
-            self.update_circuit_visualizer()  # Initialize display
+            self.update_circuit_visualizer()
     
-    def process_nano_message(self, msg):
+    def process_nano_temp_message(self, msg):
         if msg.startswith("TEMP:"):
             try:
                 self.temperature = float(msg.split(":")[1])
@@ -657,7 +554,15 @@ class RailwayAxleCounter:
             self.hot_axle = True
             self.update_temp_display()
         elif msg == "NANO_READY":
-            self.update_status("Nano Ready")
+            self.update_status("Nano Temp Ready")
+    
+    def process_nano_led_message(self, msg):
+        if msg.startswith("LED:"):
+            led_state = msg.split(":")[1]
+            self.update_led_status(led_state)
+        elif msg == "NANO_LED_READY":
+            self.update_status("Nano LED Ready")
+            self.led_status_label.config(text="Connected", fg='#00ff00')
     
     def update_count_display(self):
         self.count_label.config(text=f"{self.axle_count:02d}")
@@ -695,6 +600,13 @@ class RailwayAxleCounter:
         else:
             self.match_label.config(text="")
     
+    def update_led_status(self, state):
+        """Update LED status indicator in GUI"""
+        if state == "ON":
+            self.led_status_label.config(text="🔴 ON", fg='#ff0000')
+        else:
+            self.led_status_label.config(text="OFF", fg='#888888')
+    
     def toggle_mode(self):
         if not self.compare_mode:
             target = self.show_target_entry_dialog()
@@ -716,6 +628,8 @@ class RailwayAxleCounter:
             self.match_label.config(text="")
             self.target_label.config(text="--")
             self.target_count = 0
+            self.match_status = False
+            self.send_to_led_nano("RESET\n")
             self.update_status("Count mode - no target")
     
     def show_target_entry_dialog(self):
@@ -733,37 +647,16 @@ class RailwayAxleCounter:
         
         result = [None]
         
-        tk.Label(
-            dialog,
-            text="Enter Target Axle Count",
-            font=('Arial', 16, 'bold'),
-            bg='#1a1a2e',
-            fg='#e94560'
-        ).pack(pady=20)
+        tk.Label(dialog, text="Enter Target Axle Count", font=('Arial', 16, 'bold'), bg='#1a1a2e', fg='#e94560').pack(pady=20)
         
         entry_frame = tk.Frame(dialog, bg='#1a1a2e')
         entry_frame.pack(pady=10)
         
-        entry = tk.Entry(
-            entry_frame,
-            font=('Arial', 24, 'bold'),
-            width=5,
-            bg='#ffffff',
-            fg='#000000',
-            justify='center',
-            bd=3,
-            relief=tk.SUNKEN
-        )
+        entry = tk.Entry(entry_frame, font=('Arial', 24, 'bold'), width=5, bg='#ffffff', fg='#000000', justify='center', bd=3, relief=tk.SUNKEN)
         entry.pack()
         entry.focus_set()
         
-        error_label = tk.Label(
-            dialog,
-            text="",
-            font=('Arial', 10),
-            bg='#1a1a2e',
-            fg='#ff6b6b'
-        )
+        error_label = tk.Label(dialog, text="", font=('Arial', 10), bg='#1a1a2e', fg='#ff6b6b')
         error_label.pack()
         
         def submit():
@@ -786,38 +679,19 @@ class RailwayAxleCounter:
         button_frame = tk.Frame(dialog, bg='#1a1a2e')
         button_frame.pack(pady=15)
         
-        tk.Button(
-            button_frame,
-            text="SET TARGET",
-            font=('Arial', 12, 'bold'),
-            bg='#e94560',
-            fg='#ffffff',
-            activebackground='#ff6b6b',
-            command=submit,
-            width=12,
-            height=1
-        ).pack(side=tk.LEFT, padx=5)
-        
-        tk.Button(
-            button_frame,
-            text="CANCEL",
-            font=('Arial', 12, 'bold'),
-            bg='#0f3460',
-            fg='#ffffff',
-            activebackground='#1a3a5a',
-            command=cancel,
-            width=12,
-            height=1
-        ).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="SET TARGET", font=('Arial', 12, 'bold'), bg='#e94560', fg='#ffffff', activebackground='#ff6b6b', command=submit, width=12, height=1).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="CANCEL", font=('Arial', 12, 'bold'), bg='#0f3460', fg='#ffffff', activebackground='#1a3a5a', command=cancel, width=12, height=1).pack(side=tk.LEFT, padx=5)
         
         dialog.wait_window()
         return result[0]
     
     def reset_count(self):
         self.send_to_uno("RESET\n")
+        self.send_to_led_nano("RESET\n")
         self.axle_count = 0
+        self.match_status = False
         self.update_count_display()
-        self.update_circuit_visualizer()  # Update circuit view
+        self.update_circuit_visualizer()
         self.match_label.config(text="")
         self.update_status("✓ Count reset to 0")
     
@@ -830,6 +704,16 @@ class RailwayAxleCounter:
         except Exception as e:
             self.update_status(f"UNO send error: {e}")
     
+    def send_to_led_nano(self, message):
+        """Send command to LED Nano controller"""
+        try:
+            if self.nano_led_serial:
+                with self.serial_lock:
+                    self.nano_led_serial.write(message.encode())
+                    print(f"SENT TO NANO_LED: {message.strip()}")
+        except Exception as e:
+            self.update_status(f"Nano LED send error: {e}")
+    
     def update_status(self, message):
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.status_label.config(text=f"[{timestamp}] {message}")
@@ -838,8 +722,10 @@ class RailwayAxleCounter:
         self.running = False
         if self.uno_serial:
             self.uno_serial.close()
-        if self.nano_serial:
-            self.nano_serial.close()
+        if self.nano_temp_serial:
+            self.nano_temp_serial.close()
+        if self.nano_led_serial:
+            self.nano_led_serial.close()
         self.root.destroy()
 
 if __name__ == "__main__":
