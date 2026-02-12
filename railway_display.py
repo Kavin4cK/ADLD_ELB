@@ -546,15 +546,17 @@ class RailwayAxleCounter:
     def process_nano_temp_message(self, msg):
         if msg.startswith("TEMP:"):
             try:
-                self.temperature = float(msg.split(":")[1])
-                self.update_temp_display()
-            except:
-                pass
+                temp_value = float(msg.split(":")[1])
+                self.temperature = temp_value
+            # Schedule GUI update on main thread
+                self.root.after(0, self.update_temp_display)
+            except Exception as e:
+                print(f"Error parsing temperature: {e}")
         elif msg == "HOT_AXLE_ALERT":
             self.hot_axle = True
-            self.update_temp_display()
+            self.root.after(0, self.update_temp_display)
         elif msg == "NANO_READY":
-            self.update_status("Nano Temp Ready")
+            self.root.after(0, lambda: self.update_status("Nano Temp Ready"))
     
     def process_nano_led_message(self, msg):
         if msg.startswith("LED:"):
